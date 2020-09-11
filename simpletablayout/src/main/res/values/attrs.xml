@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TabLayout">
+        <attr name="default_text_color" format="reference|color"/>
+        <attr name="selected_text_color" format="reference|color"/>
+        <attr name="default_text_size" format="dimension"/>
+        <attr name="indicator_color" format="reference|color"/>
+    </declare-styleable>
+</resources>

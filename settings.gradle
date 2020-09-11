@@ -1,0 +1,3 @@
+include ':simpletablayout'
+include ':app'
+rootProject.name = "SimpleTabLayout"
