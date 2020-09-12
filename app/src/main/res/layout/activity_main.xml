@@ -9,7 +9,12 @@
     <com.zhy.simple.TabLayout
         android:visibility="visible"
         app:default_text_size="14sp"
+        app:simple_scale="1.2"
         app:selected_text_color="#f96d0a"
+        app:indicator_color="#f96d0a"
+        app:is_show_indicator="false"
+        app:text_and_indicator_distance="3dp"
+        app:indicator_height="2dp"
         android:id="@+id/myTabLayout"
         android:layout_margin="0dp"
         android:layout_width="match_parent"

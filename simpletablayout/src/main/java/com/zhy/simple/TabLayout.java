@@ -33,8 +33,14 @@ public class TabLayout extends HorizontalScrollView {
     private int defaultTextColor;
     private int selectedTextColor;
     private int indicatorColor;
+    private boolean isBold; //选中文字是否加粗
+    private int indicatorHeight;//指示器高度
+    private float textScale;//字体放大倍数  默认1.2倍
+    private boolean indicatorAlignmentText; //指示器是否对齐文字，默认不对齐
+    private int textAndIndicatorDistance;//文字与指示器距离
+    private boolean isShowIndicator;
     private int mInderLeft;
-
+    private CurrentViewPagerChangeListener currentViewPagerChangeListener;
     private boolean aus = false;
     Rect mTabRect = new Rect();
     OnSelectedTabListener onSelectedTabListener;
@@ -51,6 +57,12 @@ public class TabLayout extends HorizontalScrollView {
         defaultTextSize = array.getDimensionPixelSize(R.styleable.TabLayout_default_text_size,14);
         selectedTextColor = array.getColor(R.styleable.TabLayout_selected_text_color,0xff03a9f4);
         indicatorColor = array.getColor(R.styleable.TabLayout_indicator_color,0xffff33f5);
+        isBold = array.getBoolean(R.styleable.TabLayout_is_selected_text_bold,false);
+        indicatorHeight = (int) array.getDimension(R.styleable.TabLayout_indicator_height,Util.dip2px(context,3));
+        textScale = array.getFloat(R.styleable.TabLayout_simple_scale,1.2f);
+        indicatorAlignmentText = array.getBoolean(R.styleable.TabLayout_indicator_alignment_text,false);
+        textAndIndicatorDistance = (int) array.getDimension(R.styleable.TabLayout_text_and_indicator_distance,Util.dip2px(context,3));
+        isShowIndicator = array.getBoolean(R.styleable.TabLayout_is_show_indicator,true);
         init(context);
     }
 
@@ -78,6 +90,9 @@ public class TabLayout extends HorizontalScrollView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(isShowIndicator) {
+
+
         int left = 0;
         int right = 0;
         if(mTabContainer != null && mViewPager2 != null) {
@@ -138,12 +153,15 @@ public class TabLayout extends HorizontalScrollView {
                 }
 
             }
-            left += current.getPaddingLeft();
-            right -= current.getPaddingRight();
+            if(indicatorAlignmentText) {
+                left += current.getPaddingLeft();
+                right -= current.getPaddingRight();
+            }
 
-            RectF rectF = new RectF(left,mHeight - 7,right,mHeight);
-            canvas.drawRoundRect(rectF,5,5,mPaint);
 
+            RectF rectF = new RectF(left,mHeight - indicatorHeight,right,mHeight);
+            canvas.drawRoundRect(rectF,indicatorHeight / 2,indicatorHeight / 2,mPaint);
+        }
 
         }
     }
@@ -174,7 +192,7 @@ public class TabLayout extends HorizontalScrollView {
                     textView.setTag("" + i);
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX,defaultTextSize);
                     textView.setOnClickListener(new NextdClick());
-                    textView.setPadding(35,15,35,5);
+                    textView.setPadding(35,15,35,textAndIndicatorDistance);
                     textView.setText(str);
                     mTabContainer.addView(textView);
                 }
@@ -222,15 +240,23 @@ public class TabLayout extends HorizontalScrollView {
             aus =false;
             currentPosition = position;
 //            onSelectedTabListener.getPosition(position);
-            for(int i = 0;i < mTabContainer.getChildCount();i++) {
-                ((TextView)mTabContainer.getChildAt(i)).setTypeface(Typeface.DEFAULT);
+
+
+            if(isBold) {
+                for(int i = 0;i < mTabContainer.getChildCount();i++) {
+                    ((TextView)mTabContainer.getChildAt(i)).setTypeface(Typeface.DEFAULT);
+                }
+                TextView currentTv = (TextView)mTabContainer.getChildAt(position);
+                currentTv.setTypeface(Typeface.DEFAULT_BOLD);
             }
-            TextView currentTv = (TextView)mTabContainer.getChildAt(position);
-            currentTv.setTypeface(Typeface.DEFAULT_BOLD);
+
             if(onPageChangeListener != null) {
                 onPageChangeListener.getPosition(position);
             }
             invalidate();
+            if(currentViewPagerChangeListener != null) {
+                currentViewPagerChangeListener.onPageSelected(position);
+            }
 
         }
 
@@ -256,14 +282,13 @@ public class TabLayout extends HorizontalScrollView {
             int defaultColorToSelectedColorEvaluate = (Integer) evaluator.evaluate(pf,defaultTextColor,selectedTextColor);
             int selectedColorToDefaultColorEvaluate = (Integer) evaluator.evaluate(pf,selectedTextColor,defaultTextColor);
             if(currentPosition > position) {
-                animateView(currentTv,1.0f + 0.2f * ( 1.0f - pf) ,selectedColorToDefaultColorEvaluate,0);
-                animateView(previousTv,1.2f - 0.2f *  ( 1.0f - pf) ,defaultColorToSelectedColorEvaluate,0);
+                animateView(currentTv,1.0f + (textScale - 1.0f) * ( 1.0f - pf) ,selectedColorToDefaultColorEvaluate,0);
+                animateView(previousTv,textScale - (textScale - 1.0f) *  ( 1.0f - pf) ,defaultColorToSelectedColorEvaluate,0);
             }else {
                 if(position + 1 <= mTabContainer.getChildCount() - 1) {
-                    animateView(nextTv,1.0f + 0.2f * pf ,defaultColorToSelectedColorEvaluate,0);
+                    animateView(nextTv,1.0f + (textScale - 1.0f) * pf ,defaultColorToSelectedColorEvaluate,0);
                 }
-                animateView(currentTv,1.2f - 0.2f *  (pf) ,selectedColorToDefaultColorEvaluate,0);
-
+                animateView(currentTv,textScale - (textScale - 1.0f) *  (pf) ,selectedColorToDefaultColorEvaluate,0);
             }
             int offset = (int)(mTabContainer.getChildAt(position).getWidth() * pf);
             int scrollX = (int) (mTabContainer.getChildAt(position).getLeft() + offset);
@@ -282,6 +307,10 @@ public class TabLayout extends HorizontalScrollView {
 //            mInderLeft = scrollX;
 
             invalidate();
+            if(currentViewPagerChangeListener != null) {
+                currentViewPagerChangeListener.onPageScrolled(position, pf, positionOffsetPixels);
+            }
+
         }
 
         @Override
@@ -291,6 +320,10 @@ public class TabLayout extends HorizontalScrollView {
             if(state == 1) {
                 currentPosition = mViewPager2.getCurrentItem();
             }
+            if(currentViewPagerChangeListener != null) {
+                currentViewPagerChangeListener.onPageScrollStateChanged(state);
+            }
+
         }
     }
     //selectedTextColor
@@ -298,7 +331,7 @@ public class TabLayout extends HorizontalScrollView {
         if(currentPosition == p) {
             return;
         }
-        animateView(((TextView)mTabContainer.getChildAt(p)),1.2f,selectedTextColor);
+        animateView(((TextView)mTabContainer.getChildAt(p)),textScale,selectedTextColor);
         animateView(((TextView)mTabContainer.getChildAt(currentPosition)),1f,defaultTextColor);
         currentPosition = p;
     }
@@ -312,19 +345,39 @@ public class TabLayout extends HorizontalScrollView {
                 if(onSelectedTabListener != null) {
                     onSelectedTabListener.getPosition(p);
                 }
+            }else {
+                throw new RuntimeException("必须要设置viewpager2");
             }
         }
     }
     public void setCurrentItem(int p){
         selectTabItem(p);
-        mViewPager2.setCurrentItem(p,true);
+        mViewPager2.setCurrentItem(p,false);
     }
+
+    /**
+     * 选中的tab的监听
+     * @param onSelectedTabListener
+     */
     public void setOnSelectedTabListener(OnSelectedTabListener onSelectedTabListener) {
         this.onSelectedTabListener = onSelectedTabListener;
     }
 
+    /**
+     * 设置 单一的状态改变监听 只返回选中的position
+     * @param onPageChangeListener
+     */
     public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
+    }
+
+    /**
+     * 设置当前绑定的viewpager滑动监听器
+     * @param currentViewPagerChangeListener
+     */
+    public void setCurrentViewPagerChangeListener(CurrentViewPagerChangeListener currentViewPagerChangeListener){
+
+        this.currentViewPagerChangeListener = currentViewPagerChangeListener;
     }
 
     public interface OnSelectedTabListener {
@@ -333,4 +386,17 @@ public class TabLayout extends HorizontalScrollView {
     public interface OnPageChangeListener{
         void getPosition(int position);
     }
+
+    public interface CurrentViewPagerChangeListener {
+
+        void onPageSelected(int position);
+
+        void onPageScrolled(int position, float pf, int positionOffsetPixels);
+
+        void onPageScrollStateChanged(int state);
+    }
+
+
+
+
 }

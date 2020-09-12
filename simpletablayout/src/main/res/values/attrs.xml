@@ -5,5 +5,13 @@
         <attr name="selected_text_color" format="reference|color"/>
         <attr name="default_text_size" format="dimension"/>
         <attr name="indicator_color" format="reference|color"/>
+<!--        选中的文字是否加粗-->
+        <attr name="is_selected_text_bold" format="boolean"/>
+        <attr name="indicator_height" format="dimension"/>
+        <attr name="simple_scale" format="float"/>
+        <attr name="indicator_alignment_text" format="boolean"/>
+        <attr name="text_and_indicator_distance" format="dimension"/>
+<!--        是否开启指示器-->
+        <attr name="is_show_indicator" format="boolean"/>
     </declare-styleable>
 </resources>

@@ -33,8 +33,31 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initData(){
         myTabLayout.addTab(tabs);
-        myTabLayout.setWithViewPager2(viewPager2);
         viewPager2.setAdapter(new TestFragmentAdapter(this));
+        myTabLayout.setWithViewPager2(viewPager2);
+
+        myTabLayout.setOnSelectedTabListener(new TabLayout.OnSelectedTabListener() {
+            @Override
+            public void getPosition(int position) {
+
+            }
+        });
+        myTabLayout.setCurrentViewPagerChangeListener(new TabLayout.CurrentViewPagerChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrolled(int position, float pf, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     class TestFragmentAdapter extends FragmentStateAdapter {
